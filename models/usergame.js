@@ -1,6 +1,7 @@
 'use strict'
-const { Pool } = require('pg/lib')
 const { Model } = require('sequelize')
+const bcrypt = require('bcrypt')
+
 module.exports = (sequelize, DataTypes) => {
   class UserGame extends Model {
     /**
@@ -23,7 +24,40 @@ module.exports = (sequelize, DataTypes) => {
     toJSON() {
       return { ...this.get(), id: undefined }
     }
+
+    // Encrypt method
+    static #encrypt = (password) => bcrypt.hashSync(password, 10)
+    // Create an encrypted password and email
+    static register = ({ username, email, password, isAdmin }) => {
+      const encryptedPassword = this.#encrypt(password)
+
+      return this.create({
+        username,
+        email,
+        isAdmin,
+        password: encryptedPassword,
+      })
+    }
+
+    chekPassword = (password) => bcrypt.compareSync(password, this.password)
+
+    static authenticate = async ({ email, password }) => {
+      try {
+        const user = await this.findOne({
+          where: {
+            email,
+          },
+        })
+        if (!user) return Promise.reject('User not found!')
+        const isPasswordValid = user.checkPassword(password)
+        if (!isPasswordValid) return Promise.reject('Wrong password')
+        return Promise.resolve(user)
+      } catch (err) {
+        return Promise.reject(err)
+      }
+    }
   }
+
   UserGame.init(
     {
       uuid: {
@@ -33,6 +67,7 @@ module.exports = (sequelize, DataTypes) => {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
         validate: {
           notNull: { msg: 'username is required' },
           notEmpty: { msg: 'username must not be empty' },
@@ -41,6 +76,7 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
         validate: {
           notNull: { msg: 'email is required' },
           notEmpty: { msg: 'email must not be empty' },

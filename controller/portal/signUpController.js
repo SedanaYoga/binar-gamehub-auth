@@ -22,7 +22,7 @@ exports.signUpControl = asyncHandler(async (req, res) => {
   if (password !== confirmPassword) res.send("Password doesn't match!")
 
   try {
-    const user = await UserGame.create({
+    const user = await UserGame.register({
       username,
       email,
       password,
@@ -35,7 +35,7 @@ exports.signUpControl = asyncHandler(async (req, res) => {
     })
 
     setLogProps(true, user.uuid, user.id, user.username, user.isAdmin)
-    return res.redirect('/')
+    return res.redirect('/signin')
   } catch (err) {
     return res.status(400).json(err)
   }

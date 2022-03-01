@@ -5,6 +5,9 @@ const dotenv = require('dotenv')
 const morgan = require('morgan')
 const { sequelize } = require('./models')
 const routes = require('./routes')
+const session = require('express-session')
+const flash = require('express-flash')
+const passport = require('./lib/passport')
 
 //Variable
 const PORT = 5000
@@ -23,6 +26,22 @@ app.use(express.static(path.join(__dirname, 'public')))
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
+
+// Session Configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+)
+
+// Passport Config
+app.use(passport.initialize())
+app.use(passport.session())
+
+// Flash Config
+app.use(flash())
 
 // View Engine
 app.set('view engine', 'ejs')

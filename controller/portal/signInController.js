@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const { UserGame, setLogProps } = require('../../models')
+const passport = require('../../lib/passport')
 
 exports.renderSignInPage = asyncHandler((req, res) => {
   res.render('sign-in-up', { signType: 'in', error: '' })
@@ -26,3 +27,13 @@ exports.signInControl = asyncHandler(async (req, res) => {
     return res.redirect('/signin')
   }
 })
+
+exports.authLoginControl = passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/signin',
+  failureFlash: true, // for activate express flash
+})
+
+exports.whoami = (req, res) => {
+  res.json({ username: req.user.dataValues.username })
+}

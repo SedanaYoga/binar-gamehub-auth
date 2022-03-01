@@ -7,6 +7,6 @@ const {
 
 // --Sign Up-----------------------------------------------------------------
 router.get('/signup', renderSignUpPage)
-router.post('/users', signUpControl)
+router.post('/register', signUpControl)
 
 module.exports = router
